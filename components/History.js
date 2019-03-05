@@ -8,8 +8,13 @@ import UdaciFitnessCalendar from 'udacifitness-calendar'
 import { white } from '../utils/colors'
 import DateHeader from './DateHeader'
 import EntryCard from './EntryCard'
+import { AppLoading } from 'expo'
 
 class History extends Component {
+  state = {
+    ready: false
+  }
+
   componentDidMount() {
     const { dispatch } = this.props
 
@@ -22,7 +27,9 @@ class History extends Component {
           }))
         }
       })
-      .then(() => this.setState(() => ({ready: true})))
+      .then(() => this.setState(() => ({
+        ready: true
+      })))
   }
 
   renderEntry = ({ today, ...metrics }, formattedDate, key) => (
@@ -34,7 +41,10 @@ class History extends Component {
               {today}
             </Text>
           </View>
-        : <TouchableOpacity onPress={() => console.log('Pressed')}>
+        : <TouchableOpacity onPress={() => this.props.navigation.navigate(
+            'EntryDetail',
+            { entryId: key }
+          )}>
             <EntryCard date={formattedDate} metrics={metrics} />
           </TouchableOpacity>
       }
@@ -54,6 +64,11 @@ class History extends Component {
 
   render() {
     const { entries } = this.props
+    const { ready } = this.state
+
+    if (ready === false) {
+      return <AppLoading />
+    }
 
     return (
       <UdaciFitnessCalendar
