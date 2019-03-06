@@ -8,27 +8,67 @@ import {
 } from 'react-native';
 import { Foundation } from '@expo/vector-icons'
 import { purple, white } from '../utils/colors'
+import { calculateDirection } from '../utils/helpers'
+import { Location, Permissions } from 'expo'
 
 export default class Live extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      coords: null,
-      status: 'denied',
-      direction: '',
-    };
+  state = {
+    coords: '',
+    status: '',
+    direction: '',
   }
 
-  requestGeoPermission = () => {
+  componentDidMount() {
+    Permissions.getAsync(Permissions.LOCATION)
+      .then(({ status }) => {
+        if (status === 'granted') {
+          return this.setLocation()
+        }
+        this.setState(() => ({ status }))
+      })
+      .catch((error) => {
+        console.warn('Error getting location permission: ', error)
+        this.setState(() => ({ status: 'undetermined' }))
+      })
+  }
+
+  askPermission = () => {
     console.log('requesting geolocation permision...')
+    Permissions.askAsync(Permissions.LOCATION)
+      .then(({ status }) => {
+        if (status === 'granted') {
+          return this.setLocation()
+        }
+        this.setState(() => ({ status }))
+      })
+      .catch((error) => console.warn('Error asking location permission: ', error))
+  }
+
+  setLocation = () => {
+    Location.watchPositionAsync({
+      enableHighAccuracy: true,
+      timeInterval: 1,
+      distanceInterval: 1,
+    }, ({ coords }) => {
+      const newDirection = calculateDirection(coords.heading)
+      const { direction, bounceValue } = this.state
+
+      this.setState(() => ({
+        coords,
+        status: 'granted',
+        direction: newDirection,
+      }))
+    })
   }
 
   render() {
     const { status, coords, direction } = this.state
 
     if (status === null) {
-      return <ActivityIndicator style={{marginTop: 30}} />
-    } else if (status === 'denied') {
+      return <ActivityIndicator style={{ marginTop: 30 }} />
+    }
+
+    if (status === 'denied') {
       return (
         <View style={styles.center}>
           <Foundation name='alert' size={50} />
@@ -36,35 +76,53 @@ export default class Live extends Component {
             You denied access to your location. You fix this by visiting your settings and enabling location services for this app.
           </Text>
         </View>
-      );
-    } else if (status === 'undetermined') {
+      )
+    }
+
+    if (status === 'undetermined') {
       return (
         <View style={styles.center}>
           <Foundation name='alert' size={50} />
           <Text>
             You need to enable location services for this app.
           </Text>
-          <TouchableOpacity onPress={this.requestGeoPermission} style={styles.button}>
+          <TouchableOpacity onPress={this.askPermission} style={styles.button}>
             <Text style={styles.buttonText}>
               Enable
             </Text>
           </TouchableOpacity>
         </View>
-      );
-    } else if (status === 'granted') {
-      return (
-        <View>
-          <Text> Live </Text>
-          <Text> {JSON.stringify(this.state)} </Text>
-        </View>
-      );
+      )
     }
 
     return (
-      <View>
-        <Text> Error </Text>
+      <View style={styles.container}>
+        <View style={styles.directionContainer}>
+          <Text style={styles.header}>You're heading</Text>
+          <Text style={styles.direction}>
+            {direction}
+          </Text>
+        </View>
+        <View style={styles.metricContainer}>
+          <View style={styles.metric}>
+            <Text style={[styles.header, { color: white }]}>
+              Altitude
+            </Text>
+            <Text style={[styles.subheader, { color: white }]}>
+              {Math.round(coords.altitude * 3.2808)} Feet
+            </Text>
+          </View>
+          <View style={styles.metric}>
+            <Text style={[styles.header, { color: white }]}>
+              Speed
+            </Text>
+            <Text style={[styles.subheader, { color: white }]}>
+              {(coords.speed * 2.2369).toFixed(1)} MPH
+            </Text>
+          </View>
+        </View>
       </View>
-    );
+    )
   }
 }
 
@@ -119,7 +177,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     marginRight: 10,
   },
-  subHeader: {
+  subheader: {
     fontSize: 25,
     textAlign: 'center',
     marginTop: 5,
