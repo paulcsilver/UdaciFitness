@@ -50,7 +50,6 @@ export default class Live extends Component {
     Location.watchPositionAsync({
       enableHighAccuracy: true,
       timeInterval: 1,
-      distanceInterval: 1,
     }, ({ coords }) => {
       const newDirection = calculateDirection(coords.heading)
       const { direction, bounceValue } = this.state

@@ -19,6 +19,7 @@ import {
   createStackNavigator,
 } from 'react-navigation'
 import { purple, white, gray } from './utils/colors'
+import { setLocalNotification } from './utils/helpers'
 import { FontAwesome, Ionicons } from '@expo/vector-icons'
 import { Constants } from 'expo'
 import EntryDetail from './components/EntryDetail';
@@ -73,7 +74,7 @@ const tabs = {
 }
 
 const tabOptions = {
-  initialRouteName: 'Live',
+  initialRouteName: 'History',
   tabBarOptions: {
     activeTintColor: Platform.OS === 'ios' ? purple : white,
     style: {
@@ -106,6 +107,10 @@ function UdaciStatusBar({ backgroundColor, ...props }) {
 }
 
 export default class App extends React.Component {
+  componentDidMount() {
+    setLocalNotification()
+  }
+
   render() {
     return (
       <Provider store={createStore(reducer)}>
