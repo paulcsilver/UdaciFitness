@@ -8,9 +8,11 @@ import {
 } from 'react-native'
 import { NavigationActions, } from 'react-navigation'
 import {
-  getMetricMetaInfo,
-  timeToString,
+  clearLocalNotification,
   getDailyReminderValue,
+  getMetricMetaInfo,
+  setLocalNotification,
+  timeToString,
 } from '../utils/helpers'
 import UdaciSlider from './UdaciSlider'
 import UdaciStepper from './UdaciStepper'
@@ -91,7 +93,8 @@ class AddEntry extends Component {
 
     submitEntry({ key, entry })
 
-    // Clear local notification
+    clearLocalNotification()
+      .then(setLocalNotification())
   }
 
   reset = () => {
