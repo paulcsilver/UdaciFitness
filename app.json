@@ -28,10 +28,10 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "org.udacifitness.exp"
+      "bundleIdentifier": "org.silver.UdaciFitness.expo"
     },
     "android": {
-      "package": "org.udacifitness.exp"
+      "package": "org.silver.UdaciFitness.expo"
     }
   }
 }
